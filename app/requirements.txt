@@ -1,0 +1,5 @@
+fastapi[standard]
+passlib[bcrypt]
+sqlmodel
+PyJWT
+python-dotenv

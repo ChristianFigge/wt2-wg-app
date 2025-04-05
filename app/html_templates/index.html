@@ -1,0 +1,28 @@
+{% extends "shared/base.html" %}
+
+{% block title %}
+    <title>WG App</title>
+{% endblock %}
+
+{% block content %}
+<h1>WG App</h1>
+<p>(Login Test)</p>
+
+<div class="ich hasse css" style="font-size: large;">
+    <p>
+        {% if user %}
+            Hallo, {{user.username}}!
+            <br><br>
+            <a href="/logout/">Logout</a>
+        {% else %}
+            Sie sind nicht eingeloggt.
+            <br><br>
+            <a href="/login/">Login</a>
+        {% endif %}
+
+        <br><br>
+        <a href="/profile">Mein Profil</a>
+    </p>
+</div>
+
+{% endblock %}
