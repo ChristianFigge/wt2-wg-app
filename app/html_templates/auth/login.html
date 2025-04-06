@@ -7,23 +7,18 @@
 {% block content %}
     <h1>Login</h1>
 
-    {% if errors %}
-        <div>
-            <p>
-                {% for error in errors %}
-                    <li>{{error}}</li>
-                {% endfor %}
-            </p>
-        </div>
-    {% endif %}
+    {% include "shared/errorlist.html" %}
 
     <form method="POST">
-        <label for="uname"><b>Username</b></label>
+        <label for="uname" style="display: inline-block; width: 100px"><b>Username</b></label>
         <input type="text" placeholder="asd" name="username" id="uname" required>
         <br>
-        <label for="pwd"><b>Password</b></label>
+        <label for="pwd" style="display: inline-block; width: 100px"><b>Password</b></label>
         <input type="password" placeholder="asd" name="password" id="pwd" required>
 
         <button type="submit">Login</button>
     </form>
+
+    <br>
+    <p>Noch nicht registriert? <a href="/register">Jetzt Konto anlegen!</a></p>
 {% endblock %}

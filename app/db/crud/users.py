@@ -8,7 +8,8 @@ from app.schemas.users import UserCreate
 def create_new_user(user: UserCreate, db: Session):
     new_db_user = User(
         username=user.username,
-        hashed_password=Hasher.hash_password(user.password)
+        hashed_password=Hasher.hash_password(user.plain_password),
+        email=user.email,
     )
     db.add(new_db_user)
     db.commit()

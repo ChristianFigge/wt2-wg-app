@@ -5,24 +5,29 @@
 {% endblock %}
 
 {% block content %}
-<h1>WG App</h1>
-<p>(Login Test)</p>
+    <h1>WG App</h1>
+    <p>(Login Test)</p>
 
-<div class="ich hasse css" style="font-size: large;">
-    <p>
-        {% if user %}
-            Hallo, {{user.username}}!
+    {% if signup_success %}
+        <p>Erfolgreich registriert!</p>
+    {% endif %}
+
+    <div class="ich hasse css" style="font-size: large;">
+        <p>
+            {% if user %}
+                Hallo, {{user.username}}!
+                <br><br>
+                <a href="/logout/">Logout</a>
+            {% else %}
+                Sie sind nicht eingeloggt.
+                <br><br>
+                <a href="/register/">Sign up</a>
+                <br>
+                <a href="/login/">Login</a>
+            {% endif %}
+
             <br><br>
-            <a href="/logout/">Logout</a>
-        {% else %}
-            Sie sind nicht eingeloggt.
-            <br><br>
-            <a href="/login/">Login</a>
-        {% endif %}
-
-        <br><br>
-        <a href="/profile">Mein Profil</a>
-    </p>
-</div>
-
+            <a href="/profile">Mein Profil</a>
+        </p>
+    </div>
 {% endblock %}

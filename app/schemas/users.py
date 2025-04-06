@@ -1,10 +1,15 @@
 from pydantic import BaseModel
 
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     username: str
-    password: str
 
+class UserPublic(UserBase):
+    id: int
+    email: str | None = None
 
-class UserInDB(UserCreate):
-    hashed_password: str
+class UserProfile(UserBase):
+    email: str
+
+class UserCreate(UserProfile):
+    plain_password: str

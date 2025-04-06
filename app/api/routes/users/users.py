@@ -1,22 +1,24 @@
 from typing import Annotated
 
+from fastapi import APIRouter, Request, responses, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.exc import SQLAlchemyError
+from sqlmodel import Session
 from starlette import status
+from starlette.responses import HTMLResponse, Response
+from starlette.templating import Jinja2Templates
 
-from app.api.auth.forms import LoginForm
 from app.api.auth.login import create_access_token_for_user, authenticate_user
 from app.api.auth.login import is_logged_in
+from app.api.routes.users.forms import LoginForm
+from app.api.routes.users.forms import UserCreateForm
 from app.db.crud.users import create_new_user
+from app.db.crud.utils import value_exists
 from app.db.models.user import User
 from app.db.session import DbSession
 from app.db.session import get_db
-from fastapi import APIRouter, Request, responses, Depends, HTTPException
-
 from app.schemas.tokens import Token
 from app.schemas.users import UserCreate
-from sqlmodel import Session
-from starlette.responses import HTMLResponse, Response
-from starlette.templating import Jinja2Templates
 
 templates = Jinja2Templates(directory="app/html_templates")
 router = APIRouter()
@@ -37,8 +39,7 @@ async def login_user(req: Request, db: Session = Depends(get_db)):
             login_for_access_token(resp, login_form, db)
             return resp
         except HTTPException:
-            login_form.__dict__.get("errors").append("Falscher Username oder Password!")
-            return templates.TemplateResponse("auth/login.html", login_form.__dict__)  #
+            login_form.errors.append("Falscher Username oder Password!")
 
     return templates.TemplateResponse("auth/login.html", login_form.__dict__)
 
@@ -65,15 +66,37 @@ def login_for_access_token(
 
 @router.get("/register", response_class=HTMLResponse)
 def register_form(req: Request):
-    return templates.TemplateResponse(req, "register.html", context={})
+    return templates.TemplateResponse(req, "users/register.html", context={})
 
 
 @router.post("/register")
-async def register_new_user(req: Request, db: DbSession) -> User:
-    form = await req.form()
-    user_form = UserCreate(username=form.get("username"), password=form.get("password"))
-    new_user = create_new_user(user_form, db)
-    return new_user
+async def register_new_user(req: Request, db: DbSession):
+    form = UserCreateForm(req)
+    form_is_valid = await form.load_data()
+    if form_is_valid:
+
+        if value_exists(User, User.username, form.username, db):
+            form.errors.append("Dieser Nutzername ist bereits vergeben!")
+            form.username = ""
+        if value_exists(User, User.email, form.email, db):
+            form.errors.append("Diese E-Mail Adresse ist bereits vergeben!")
+            form.email = ""
+
+        if not form.errors:
+            user = UserCreate(
+                username=form.username,
+                plain_password=form.password,
+                email=form.email
+            )
+            try:
+                create_new_user(user, db)
+                form.__dict__.update(signup_success=True)
+                return templates.TemplateResponse("index.html", form.__dict__)
+            except SQLAlchemyError as sqlEx:
+                print(sqlEx)
+                form.errors.append("Ein Datenbankfehler ist aufgetreten :(")
+
+    return templates.TemplateResponse("users/register.html", form.__dict__)
 
 
 @router.get("/profile")
